@@ -2,17 +2,31 @@
 
 --
 
-# Protocol Buffers
+## Protocol Buffers
 
 > Protocol buffers are a language-neutral, platform-neutral extensible mechanism
 > for serializing structured data.
 
--   Developed by Google
--   First released in 2008
+-   Developed by Google.
+-   First released in 2008.
+-   Officially supported languages: C++, C#, Go, Java, Python.
 
 --
 
-# Format
+-   Schema for data.
+-   Used for storage and RPCs.
+-   Efficient binary encoding.
+
+--
+
+## How it works
+
+-   Define message formats in a `.proto` file.
+-   Use the protocol buffer compiler.
+
+--
+
+## Format
 
 -   proto2:
 
@@ -30,6 +44,26 @@ message Person {
 message Person {
   string name = 1;
   int32 id = 2;
+  string email = 3;
+}
+```
+
+--
+
+## JSON
+
+```proto
+message Person {
+  string name = 1;
+  int32 id = 2;
   optional string email = 3;
+}
+```
+
+```json
+{
+  "name": "John Smith",
+  "id": 123,
+  "email": "test@example.com"
 }
 ```
