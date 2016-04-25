@@ -112,15 +112,17 @@ update action model =
 view address model =
   Html.div
     [ style
-      [ "background-color" => "black"
-      , "padding" => "30px"
+      [ "padding" => "30px"
+      , "font-family" => "'Ubuntu'"
       ]
     ]
     [ Html.node "script" [ src "/highlight/highlight.pack.js" ] []
+    , Html.node "link" [ rel "stylesheet", href "http://fonts.googleapis.com/css?family=Ubuntu" ] []
     , Html.node "link" [ rel "stylesheet", href "/highlight/styles/solarized-light.css" ] []
     , Html.div
       [ style
         [ "background-color" => "white"
+        , "box-shadow" => "0 0 10px"
         , "border-radius" => "10px"
         , "width" => "600px"
         , "padding" => "30px 40px"
