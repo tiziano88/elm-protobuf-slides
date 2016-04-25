@@ -4,6 +4,7 @@ import Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
+import Keyboard
 import Markdown
 import StartApp
 import String
@@ -43,9 +44,19 @@ app =
     { init = init
     , view = view
     , update = update
-    , inputs = []
+    , inputs =
+      [ Keyboard.space |> Signal.map (\s -> if s then NextPage else Nop)
+      , Keyboard.enter |> Signal.map (\s -> if s then NextPage else Nop)
+      , Keyboard.arrows |> Signal.map
+        (\s ->
+          case s.x of
+            -1 -> PreviousPage
+            1 -> NextPage
+            _ -> Nop)
+      ]
     }
 
+const x _ = x
 
 init : (Model, Effects Action)
 init =
@@ -82,10 +93,20 @@ update action model =
       noEffects { model | pages = Array.fromList <| String.split "\n--\n" s }
 
     NextPage ->
-      noEffects { model | currentPage = model.currentPage + 1 }
+      let
+        newPage = model.currentPage + 1
+      in
+        if newPage < Array.length model.pages
+        then noEffects { model | currentPage = newPage }
+        else noEffects model
 
     PreviousPage ->
-      noEffects { model | currentPage = model.currentPage - 1 }
+      let
+        newPage = model.currentPage - 1
+      in
+        if newPage >= 0
+        then noEffects { model | currentPage = newPage }
+        else noEffects model
 
 
 view address model =
@@ -100,6 +121,7 @@ view address model =
     , Html.div
       [ style
         [ "background-color" => "white"
+        , "border-radius" => "10px"
         , "width" => "600px"
         , "padding" => "30px 40px"
         ]
@@ -109,13 +131,31 @@ view address model =
           [ "height" => "400px" ]
         ]
         [ Markdown.toHtml <| Maybe.withDefault "" <| Array.get model.currentPage model.pages ]
-      , Html.div [] -- Footer.
+      , Html.div -- Footer.
+        [ style
+          [ "border-top" => "solid black" ]
+        ]
         [ Html.a
-          [ onClick address PreviousPage ]
+          [ onClick address PreviousPage
+          , href "#"
+          ]
           [ Html.text "<<<" ]
-        , Html.text (toString model.currentPage)
+        , Html.span
+          [ style
+            [ "width" => "5em"
+            , "display" => "inline-block"
+            , "text-align" => "right"
+            ]
+          ]
+          [ Html.text (toString <| model.currentPage + 1) ]
+        , Html.span []
+          [ Html.text "/" ]
+        , Html.span []
+          [ Html.text (toString <| Array.length model.pages) ]
         , Html.a
-          [ onClick address NextPage ]
+          [ onClick address NextPage
+          , href "#"
+          ]
           [ Html.text ">>>" ]
         ]
       ]

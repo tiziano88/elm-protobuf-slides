@@ -12,6 +12,7 @@ Elm.Main.make = function (_elm) {
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
+   $Keyboard = Elm.Keyboard.make(_elm),
    $List = Elm.List.make(_elm),
    $Markdown = Elm.Markdown.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
@@ -28,8 +29,10 @@ Elm.Main.make = function (_elm) {
       switch (_p0.ctor)
       {case "Nop": return noEffects(model);
          case "SetContent": return noEffects(_U.update(model,{pages: $Array.fromList(A2($String.split,"\n--\n",_p0._0))}));
-         case "NextPage": return noEffects(_U.update(model,{currentPage: model.currentPage + 1}));
-         default: return noEffects(_U.update(model,{currentPage: model.currentPage - 1}));}
+         case "NextPage": var newPage = model.currentPage + 1;
+           return _U.cmp(newPage,$Array.length(model.pages)) < 0 ? noEffects(_U.update(model,{currentPage: newPage})) : noEffects(model);
+         default: var newPage = model.currentPage - 1;
+           return _U.cmp(newPage,0) > -1 ? noEffects(_U.update(model,{currentPage: newPage})) : noEffects(model);}
    });
    var PreviousPage = {ctor: "PreviousPage"};
    var NextPage = {ctor: "NextPage"};
@@ -40,24 +43,47 @@ Elm.Main.make = function (_elm) {
               ,A3($Html.node,"link",_U.list([$Html$Attributes.rel("stylesheet"),$Html$Attributes.href("/highlight/styles/solarized-light.css")]),_U.list([]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"background-color","white")
+                                                      ,A2(_op["=>"],"border-radius","10px")
                                                       ,A2(_op["=>"],"width","600px")
                                                       ,A2(_op["=>"],"padding","30px 40px")]))]),
               _U.list([A2($Html.div,
                       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","400px")]))]),
                       _U.list([$Markdown.toHtml(A2($Maybe.withDefault,"",A2($Array.get,model.currentPage,model.pages)))]))
                       ,A2($Html.div,
-                      _U.list([]),
-                      _U.list([A2($Html.a,_U.list([A2($Html$Events.onClick,address,PreviousPage)]),_U.list([$Html.text("<<<")]))
-                              ,$Html.text($Basics.toString(model.currentPage))
-                              ,A2($Html.a,_U.list([A2($Html$Events.onClick,address,NextPage)]),_U.list([$Html.text(">>>")]))]))]))]));
+                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"border-top","solid black")]))]),
+                      _U.list([A2($Html.a,_U.list([A2($Html$Events.onClick,address,PreviousPage),$Html$Attributes.href("#")]),_U.list([$Html.text("<<<")]))
+                              ,A2($Html.span,
+                              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"width","5em")
+                                                                      ,A2(_op["=>"],"display","inline-block")
+                                                                      ,A2(_op["=>"],"text-align","right")]))]),
+                              _U.list([$Html.text($Basics.toString(model.currentPage + 1))]))
+                              ,A2($Html.span,_U.list([]),_U.list([$Html.text("/")]))
+                              ,A2($Html.span,_U.list([]),_U.list([$Html.text($Basics.toString($Array.length(model.pages)))]))
+                              ,A2($Html.a,
+                              _U.list([A2($Html$Events.onClick,address,NextPage),$Html$Attributes.href("#")]),
+                              _U.list([$Html.text(">>>")]))]))]))]));
    });
    var SetContent = function (a) {    return {ctor: "SetContent",_0: a};};
    var Nop = {ctor: "Nop"};
    var initialModel = {content: "",pages: $Array.empty,currentPage: 0};
+   var $const = F2(function (x,_p1) {    return x;});
    var url = "./slides.md";
    var getContent = $Effects.task(A2($Task.map,SetContent,A2($Task.map,$Maybe.withDefault(""),$Task.toMaybe($Http.getString(url)))));
    var init = {ctor: "_Tuple2",_0: initialModel,_1: getContent};
-   var app = $StartApp.start({init: init,view: view,update: update,inputs: _U.list([])});
+   var app = $StartApp.start({init: init
+                             ,view: view
+                             ,update: update
+                             ,inputs: _U.list([A2($Signal.map,function (s) {    return s ? NextPage : Nop;},$Keyboard.space)
+                                              ,A2($Signal.map,function (s) {    return s ? NextPage : Nop;},$Keyboard.enter)
+                                              ,A2($Signal.map,
+                                              function (s) {
+                                                 var _p2 = s.x;
+                                                 switch (_p2)
+                                                 {case -1: return PreviousPage;
+                                                    case 1: return NextPage;
+                                                    default: return Nop;}
+                                              },
+                                              $Keyboard.arrows)])});
    var Model = F3(function (a,b,c) {    return {content: a,pages: b,currentPage: c};});
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    var main = app.html;
@@ -67,6 +93,7 @@ Elm.Main.make = function (_elm) {
                              ,url: url
                              ,getContent: getContent
                              ,app: app
+                             ,$const: $const
                              ,init: init
                              ,initialModel: initialModel
                              ,Nop: Nop
