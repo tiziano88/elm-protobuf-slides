@@ -1,5 +1,9 @@
 # elm-protobuf
 
+```java
+public class Test {}
+```
+
 --
 
 ## Protocol Buffers
@@ -30,7 +34,7 @@
 
 -   proto2:
 
-```proto
+```protobuf
 message Person {
   required string name = 1;
   required int32 id = 2;
@@ -40,7 +44,7 @@ message Person {
 
 -   proto3:
 
-```proto
+```protobuf
 message Person {
   string name = 1;
   int32 id = 2;

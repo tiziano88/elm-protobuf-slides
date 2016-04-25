@@ -1,0 +1,79 @@
+Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values) return _elm.Main.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Markdown = Elm.Markdown.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $StartApp = Elm.StartApp.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
+   var noEffects = function (m) {    return {ctor: "_Tuple2",_0: m,_1: $Effects.none};};
+   var update = F2(function (action,model) {
+      var _p0 = action;
+      switch (_p0.ctor)
+      {case "Nop": return noEffects(model);
+         case "SetContent": return noEffects(_U.update(model,{pages: $Array.fromList(A2($String.split,"\n--\n",_p0._0))}));
+         case "NextPage": return noEffects(_U.update(model,{currentPage: model.currentPage + 1}));
+         default: return noEffects(_U.update(model,{currentPage: model.currentPage - 1}));}
+   });
+   var PreviousPage = {ctor: "PreviousPage"};
+   var NextPage = {ctor: "NextPage"};
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"background-color","black"),A2(_op["=>"],"padding","30px")]))]),
+      _U.list([A3($Html.node,"script",_U.list([$Html$Attributes.src("/highlight/highlight.pack.js")]),_U.list([]))
+              ,A3($Html.node,"link",_U.list([$Html$Attributes.rel("stylesheet"),$Html$Attributes.href("/highlight/styles/solarized-light.css")]),_U.list([]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"background-color","white")
+                                                      ,A2(_op["=>"],"width","600px")
+                                                      ,A2(_op["=>"],"padding","30px 40px")]))]),
+              _U.list([A2($Html.div,
+                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","400px")]))]),
+                      _U.list([$Markdown.toHtml(A2($Maybe.withDefault,"",A2($Array.get,model.currentPage,model.pages)))]))
+                      ,A2($Html.div,
+                      _U.list([]),
+                      _U.list([A2($Html.a,_U.list([A2($Html$Events.onClick,address,PreviousPage)]),_U.list([$Html.text("<<<")]))
+                              ,$Html.text($Basics.toString(model.currentPage))
+                              ,A2($Html.a,_U.list([A2($Html$Events.onClick,address,NextPage)]),_U.list([$Html.text(">>>")]))]))]))]));
+   });
+   var SetContent = function (a) {    return {ctor: "SetContent",_0: a};};
+   var Nop = {ctor: "Nop"};
+   var initialModel = {content: "",pages: $Array.empty,currentPage: 0};
+   var url = "./slides.md";
+   var getContent = $Effects.task(A2($Task.map,SetContent,A2($Task.map,$Maybe.withDefault(""),$Task.toMaybe($Http.getString(url)))));
+   var init = {ctor: "_Tuple2",_0: initialModel,_1: getContent};
+   var app = $StartApp.start({init: init,view: view,update: update,inputs: _U.list([])});
+   var Model = F3(function (a,b,c) {    return {content: a,pages: b,currentPage: c};});
+   var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
+   var main = app.html;
+   return _elm.Main.values = {_op: _op
+                             ,main: main
+                             ,Model: Model
+                             ,url: url
+                             ,getContent: getContent
+                             ,app: app
+                             ,init: init
+                             ,initialModel: initialModel
+                             ,Nop: Nop
+                             ,SetContent: SetContent
+                             ,NextPage: NextPage
+                             ,PreviousPage: PreviousPage
+                             ,noEffects: noEffects
+                             ,update: update
+                             ,view: view};
+};
