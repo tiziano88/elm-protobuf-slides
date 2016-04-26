@@ -130,7 +130,9 @@ view address model =
       ]
       [ Html.div -- Content.
         [ style
-          [ "height" => "400px" ]
+          [ "height" => "400px"
+          , "overflow" => "auto"
+          ]
         ]
         [ Markdown.toHtml <| Maybe.withDefault "" <| Array.get model.currentPage model.pages ]
       , Html.div -- Footer.

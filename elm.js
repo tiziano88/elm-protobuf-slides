@@ -11344,7 +11344,7 @@ Elm.Main.make = function (_elm) {
                                                       ,A2(_op["=>"],"width","600px")
                                                       ,A2(_op["=>"],"padding","30px 40px")]))]),
               _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","400px")]))]),
+                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","400px"),A2(_op["=>"],"overflow","auto")]))]),
                       _U.list([$Markdown.toHtml(A2($Maybe.withDefault,"",A2($Array.get,model.currentPage,model.pages)))]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"border-top","solid black")]))]),
