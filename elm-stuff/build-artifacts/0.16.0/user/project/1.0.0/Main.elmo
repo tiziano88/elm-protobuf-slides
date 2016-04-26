@@ -38,7 +38,10 @@ Elm.Main.make = function (_elm) {
    var NextPage = {ctor: "NextPage"};
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","30px"),A2(_op["=>"],"font-family","\'Ubuntu\'")]))]),
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","30px")
+                                              ,A2(_op["=>"],"width","80vw")
+                                              ,A2(_op["=>"],"font-family","\'Ubuntu\'")
+                                              ,A2(_op["=>"],"font-size","1.5vw")]))]),
       _U.list([A3($Html.node,"script",_U.list([$Html$Attributes.src("./highlight/highlight.pack.js")]),_U.list([]))
               ,A3($Html.node,
               "link",
@@ -49,10 +52,9 @@ Elm.Main.make = function (_elm) {
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"background-color","white")
                                                       ,A2(_op["=>"],"box-shadow","0 0 10px")
                                                       ,A2(_op["=>"],"border-radius","10px")
-                                                      ,A2(_op["=>"],"width","600px")
-                                                      ,A2(_op["=>"],"padding","30px 40px")]))]),
+                                                      ,A2(_op["=>"],"padding","2em 3em")]))]),
               _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","400px"),A2(_op["=>"],"overflow","auto")]))]),
+                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","40vw"),A2(_op["=>"],"overflow","auto")]))]),
                       _U.list([$Markdown.toHtml(A2($Maybe.withDefault,"",A2($Array.get,model.currentPage,model.pages)))]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"border-top","solid black")]))]),

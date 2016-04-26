@@ -113,7 +113,9 @@ view address model =
   Html.div
     [ style
       [ "padding" => "30px"
+      , "width" => "80vw"
       , "font-family" => "'Ubuntu'"
+      , "font-size" => "1.5vw"
       ]
     ]
     [ Html.node "script" [ src "./highlight/highlight.pack.js" ] []
@@ -124,13 +126,12 @@ view address model =
         [ "background-color" => "white"
         , "box-shadow" => "0 0 10px"
         , "border-radius" => "10px"
-        , "width" => "600px"
-        , "padding" => "30px 40px"
+        , "padding" => "2em 3em"
         ]
       ]
       [ Html.div -- Content.
         [ style
-          [ "height" => "400px"
+          [ "height" => "40vw"
           , "overflow" => "auto"
           ]
         ]
