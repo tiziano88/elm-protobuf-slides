@@ -56,7 +56,7 @@ message Person {
 
 ## JSON
 
-```proto
+```protobuf
 message Person {
   string name = 1;
   int32 id = 2;
