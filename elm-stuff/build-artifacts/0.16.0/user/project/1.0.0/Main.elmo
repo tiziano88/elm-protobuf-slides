@@ -8,12 +8,14 @@ Elm.Main.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $History = Elm.History.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Keyboard = Elm.Keyboard.make(_elm),
    $List = Elm.List.make(_elm),
+   $Location = Elm.Location.make(_elm),
    $Markdown = Elm.Markdown.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -24,24 +26,15 @@ Elm.Main.make = function (_elm) {
    var _op = {};
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
    var noEffects = function (m) {    return {ctor: "_Tuple2",_0: m,_1: $Effects.none};};
-   var update = F2(function (action,model) {
-      var _p0 = action;
-      switch (_p0.ctor)
-      {case "Nop": return noEffects(model);
-         case "SetContent": return noEffects(_U.update(model,{pages: $Array.fromList(A2($String.split,"\n--\n",_p0._0))}));
-         case "NextPage": var newPage = model.currentPage + 1;
-           return _U.cmp(newPage,$Array.length(model.pages)) < 0 ? noEffects(_U.update(model,{currentPage: newPage})) : noEffects(model);
-         default: var newPage = model.currentPage - 1;
-           return _U.cmp(newPage,0) > -1 ? noEffects(_U.update(model,{currentPage: newPage})) : noEffects(model);}
-   });
    var PreviousPage = {ctor: "PreviousPage"};
    var NextPage = {ctor: "NextPage"};
    var view = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","30px")
-                                              ,A2(_op["=>"],"width","80vw")
+                                              ,A2(_op["=>"],"margin","auto")
+                                              ,A2(_op["=>"],"width","90vw")
                                               ,A2(_op["=>"],"font-family","\'Ubuntu\'")
-                                              ,A2(_op["=>"],"font-size","1.5vw")]))]),
+                                              ,A2(_op["=>"],"font-size","2vw")]))]),
       _U.list([A3($Html.node,"script",_U.list([$Html$Attributes.src("./highlight/highlight.pack.js")]),_U.list([]))
               ,A3($Html.node,
               "link",
@@ -54,7 +47,7 @@ Elm.Main.make = function (_elm) {
                                                       ,A2(_op["=>"],"border-radius","10px")
                                                       ,A2(_op["=>"],"padding","2em 3em")]))]),
               _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","40vw"),A2(_op["=>"],"overflow","auto")]))]),
+                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","50vw"),A2(_op["=>"],"overflow","auto")]))]),
                       _U.list([$Markdown.toHtml(A2($Maybe.withDefault,"",A2($Array.get,model.currentPage,model.pages)))]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"border-top","solid black")]))]),
@@ -70,13 +63,43 @@ Elm.Main.make = function (_elm) {
                               _U.list([A2($Html$Events.onClick,address,NextPage),$Html$Attributes.href("#")]),
                               _U.list([$Html.text(">>>")]))]))]))]));
    });
+   var SetCurrentPage = function (a) {    return {ctor: "SetCurrentPage",_0: a};};
    var SetContent = function (a) {    return {ctor: "SetContent",_0: a};};
    var Nop = {ctor: "Nop"};
+   var updateHash = function (m) {
+      return {ctor: "_Tuple2"
+             ,_0: m
+             ,_1: $Effects.task(A2($Task.map,
+             function (x) {
+                return Nop;
+             },
+             $History.replacePath(A2($Basics._op["++"],"#",$Basics.toString(m.currentPage + 1)))))};
+   };
+   var update = F2(function (action,model) {
+      var _p0 = action;
+      switch (_p0.ctor)
+      {case "Nop": return noEffects(model);
+         case "SetContent": return noEffects(_U.update(model,{pages: $Array.fromList(A2($String.split,"\n--\n",_p0._0))}));
+         case "SetCurrentPage": return noEffects(_U.update(model,{currentPage: _p0._0}));
+         case "NextPage": var newPage = model.currentPage + 1;
+           return _U.cmp(newPage,$Array.length(model.pages)) < 0 ? updateHash(_U.update(model,{currentPage: newPage})) : noEffects(model);
+         default: var newPage = model.currentPage - 1;
+           return _U.cmp(newPage,0) > -1 ? updateHash(_U.update(model,{currentPage: newPage})) : noEffects(model);}
+   });
    var initialModel = {content: "",pages: $Array.empty,currentPage: 0};
    var $const = F2(function (x,_p1) {    return x;});
+   var getLocation = $Effects.task(A2($Task.map,
+   SetCurrentPage,
+   A2($Task.map,
+   function (x) {
+      return x - 1;
+   },
+   A2($Task.map,
+   $Result.withDefault(1),
+   A2($Task.map,$String.toInt,A2($Task.map,$String.dropLeft(1),A2($Task.map,function (l) {    return l.hash;},$Location.location)))))));
    var url = "./slides.md";
    var getContent = $Effects.task(A2($Task.map,SetContent,A2($Task.map,$Maybe.withDefault(""),$Task.toMaybe($Http.getString(url)))));
-   var init = {ctor: "_Tuple2",_0: initialModel,_1: getContent};
+   var init = {ctor: "_Tuple2",_0: initialModel,_1: $Effects.batch(_U.list([getContent,getLocation]))};
    var app = $StartApp.start({init: init
                              ,view: view
                              ,update: update
@@ -99,15 +122,18 @@ Elm.Main.make = function (_elm) {
                              ,Model: Model
                              ,url: url
                              ,getContent: getContent
+                             ,getLocation: getLocation
                              ,app: app
                              ,$const: $const
                              ,init: init
                              ,initialModel: initialModel
                              ,Nop: Nop
                              ,SetContent: SetContent
+                             ,SetCurrentPage: SetCurrentPage
                              ,NextPage: NextPage
                              ,PreviousPage: PreviousPage
                              ,noEffects: noEffects
+                             ,updateHash: updateHash
                              ,update: update
                              ,view: view};
 };
