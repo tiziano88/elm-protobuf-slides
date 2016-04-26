@@ -1,10 +1,12 @@
 import Array exposing (Array)
 import Effects exposing (Effects)
+import History
 import Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Keyboard
+import Location
 import Markdown
 import StartApp
 import String
@@ -39,6 +41,18 @@ getContent =
     |> Effects.task
 
 
+getLocation : Effects Action
+getLocation =
+  Location.location
+    |> Task.map (\l -> l.hash)
+    |> Task.map (String.dropLeft 1)
+    |> Task.map String.toInt
+    |> Task.map (Result.withDefault 1)
+    |> Task.map (\x -> x - 1)
+    |> Task.map SetCurrentPage
+    |> Effects.task
+
+
 app =
   StartApp.start
     { init = init
@@ -60,7 +74,7 @@ const x _ = x
 
 init : (Model, Effects Action)
 init =
-  (initialModel, getContent)
+  (initialModel, Effects.batch [ getContent, getLocation ])
 
 
 initialModel : Model
@@ -74,6 +88,7 @@ initialModel =
 type Action
   = Nop
   | SetContent String
+  | SetCurrentPage Int
   | NextPage
   | PreviousPage
 
@@ -81,6 +96,15 @@ type Action
 noEffects : a -> (a, Effects b)
 noEffects m =
   (m, Effects.none)
+
+
+updateHash : Model -> (Model, Effects Action)
+updateHash m =
+  ( m
+  , History.replacePath ("#" ++ toString (m.currentPage + 1))
+    |> Task.map (\x -> Nop)
+    |> Effects.task
+  )
 
 
 update : Action -> Model -> (Model, Effects Action)
@@ -92,12 +116,15 @@ update action model =
     SetContent s ->
       noEffects { model | pages = Array.fromList <| String.split "\n--\n" s }
 
+    SetCurrentPage p ->
+      noEffects { model | currentPage = p }
+
     NextPage ->
       let
         newPage = model.currentPage + 1
       in
         if newPage < Array.length model.pages
-        then noEffects { model | currentPage = newPage }
+        then updateHash { model | currentPage = newPage }
         else noEffects model
 
     PreviousPage ->
@@ -105,7 +132,7 @@ update action model =
         newPage = model.currentPage - 1
       in
         if newPage >= 0
-        then noEffects { model | currentPage = newPage }
+        then updateHash { model | currentPage = newPage }
         else noEffects model
 
 
@@ -113,9 +140,10 @@ view address model =
   Html.div
     [ style
       [ "padding" => "30px"
-      , "width" => "80vw"
+      , "margin" => "auto"
+      , "width" => "90vw"
       , "font-family" => "'Ubuntu'"
-      , "font-size" => "1.5vw"
+      , "font-size" => "2vw"
       ]
     ]
     [ Html.node "script" [ src "./highlight/highlight.pack.js" ] []
@@ -131,7 +159,7 @@ view address model =
       ]
       [ Html.div -- Content.
         [ style
-          [ "height" => "40vw"
+          [ "height" => "50vw"
           , "overflow" => "auto"
           ]
         ]

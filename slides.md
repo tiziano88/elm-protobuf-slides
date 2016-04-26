@@ -1,8 +1,10 @@
 # elm-protobuf
 
-```java
-public class Test {}
-```
+_Cross-language data serialization and RPC for the web._
+
+## Tiziano Santoro
+
+### _Software Engineer - Google_
 
 --
 
@@ -30,27 +32,27 @@ public class Test {}
 
 --
 
-## Format
+## Syntax
 
 -   proto2:
 
-```protobuf
-message Person {
-  required string name = 1;
-  required int32 id = 2;
-  optional string email = 3;
-}
-```
+    ```protobuf
+    message Person {
+      required string name = 1;
+      required int32 id = 2;
+      optional string email = 3;
+    }
+    ```
 
 -   proto3:
 
-```protobuf
-message Person {
-  string name = 1;
-  int32 id = 2;
-  string email = 3;
-}
-```
+    ```protobuf
+    message Person {
+      string name = 1;
+      int32 id = 2;
+      string email = 3;
+    }
+    ```
 
 --
 
@@ -60,7 +62,7 @@ message Person {
 message Person {
   string name = 1;
   int32 id = 2;
-  optional string email = 3;
+  string email = 3;
 }
 ```
 
