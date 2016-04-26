@@ -39,12 +39,12 @@ Elm.Main.make = function (_elm) {
    var view = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","30px"),A2(_op["=>"],"font-family","\'Ubuntu\'")]))]),
-      _U.list([A3($Html.node,"script",_U.list([$Html$Attributes.src("/highlight/highlight.pack.js")]),_U.list([]))
+      _U.list([A3($Html.node,"script",_U.list([$Html$Attributes.src("./highlight/highlight.pack.js")]),_U.list([]))
               ,A3($Html.node,
               "link",
               _U.list([$Html$Attributes.rel("stylesheet"),$Html$Attributes.href("http://fonts.googleapis.com/css?family=Ubuntu")]),
               _U.list([]))
-              ,A3($Html.node,"link",_U.list([$Html$Attributes.rel("stylesheet"),$Html$Attributes.href("/highlight/styles/solarized-light.css")]),_U.list([]))
+              ,A3($Html.node,"link",_U.list([$Html$Attributes.rel("stylesheet"),$Html$Attributes.href("./highlight/styles/solarized-light.css")]),_U.list([]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"background-color","white")
                                                       ,A2(_op["=>"],"box-shadow","0 0 10px")

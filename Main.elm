@@ -116,9 +116,9 @@ view address model =
       , "font-family" => "'Ubuntu'"
       ]
     ]
-    [ Html.node "script" [ src "/highlight/highlight.pack.js" ] []
+    [ Html.node "script" [ src "./highlight/highlight.pack.js" ] []
     , Html.node "link" [ rel "stylesheet", href "http://fonts.googleapis.com/css?family=Ubuntu" ] []
-    , Html.node "link" [ rel "stylesheet", href "/highlight/styles/solarized-light.css" ] []
+    , Html.node "link" [ rel "stylesheet", href "./highlight/styles/solarized-light.css" ] []
     , Html.div
       [ style
         [ "background-color" => "white"
