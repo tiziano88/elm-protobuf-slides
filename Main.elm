@@ -11,6 +11,7 @@ import Markdown
 import StartApp
 import String
 import Task exposing (Task)
+import Window
 
 
 main : Signal Html.Html
@@ -26,6 +27,7 @@ type alias Model =
   { content : String
   , pages : Array String
   , currentPage : Int
+  , size : (Int, Int)
   }
 
 
@@ -59,7 +61,8 @@ app =
     , view = view
     , update = update
     , inputs =
-      [ Keyboard.space |> Signal.map (\s -> if s then NextPage else Nop)
+      [ Window.dimensions |> Signal.map Resize
+      , Keyboard.space |> Signal.map (\s -> if s then NextPage else Nop)
       , Keyboard.enter |> Signal.map (\s -> if s then NextPage else Nop)
       , Keyboard.arrows |> Signal.map
         (\s ->
@@ -82,6 +85,7 @@ initialModel =
   { content = ""
   , pages = Array.empty
   , currentPage = 0
+  , size = (0,0)
   }
 
 
@@ -91,6 +95,7 @@ type Action
   | SetCurrentPage Int
   | NextPage
   | PreviousPage
+  | Resize (Int, Int)
 
 
 noEffects : a -> (a, Effects b)
@@ -135,15 +140,23 @@ update action model =
         then updateHash { model | currentPage = newPage }
         else noEffects model
 
+    Resize s ->
+      noEffects { model | size = s }
+
+ratio = 3/2
 
 view address model =
   Html.div
     [ style
-      [ "padding" => "30px"
+      [ "padding" => "1em"
       , "margin" => "auto"
-      , "width" => "90vw"
+      , "width" => "40em"
       , "font-family" => "'Ubuntu'"
-      , "font-size" => "2vw"
+      , "font-size" =>
+        let
+          (x,y) = model.size
+        in
+          if (toFloat x)/(toFloat y) < ratio then "2vw" else "3vh"
       ]
     ]
     [ Html.node "script" [ src "./highlight/highlight.pack.js" ] []
@@ -159,7 +172,7 @@ view address model =
       ]
       [ Html.div -- Content.
         [ style
-          [ "height" => "50vw"
+          [ "height" => "25em"
           , "overflow" => "auto"
           ]
         ]

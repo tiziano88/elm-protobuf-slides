@@ -8702,6 +8702,84 @@ Elm.Keyboard.make = function (_elm) {
                                  ,isDown: isDown
                                  ,keysDown: keysDown
                                  ,presses: presses};
+};Elm.Native = Elm.Native || {};
+Elm.Native.Window = {};
+Elm.Native.Window.make = function make(localRuntime) {
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Window = localRuntime.Native.Window || {};
+	if (localRuntime.Native.Window.values)
+	{
+		return localRuntime.Native.Window.values;
+	}
+
+	var NS = Elm.Native.Signal.make(localRuntime);
+	var Tuple2 = Elm.Native.Utils.make(localRuntime).Tuple2;
+
+
+	function getWidth()
+	{
+		return localRuntime.node.clientWidth;
+	}
+
+
+	function getHeight()
+	{
+		if (localRuntime.isFullscreen())
+		{
+			return window.innerHeight;
+		}
+		return localRuntime.node.clientHeight;
+	}
+
+
+	var dimensions = NS.input('Window.dimensions', Tuple2(getWidth(), getHeight()));
+
+
+	function resizeIfNeeded()
+	{
+		// Do not trigger event if the dimensions have not changed.
+		// This should be most of the time.
+		var w = getWidth();
+		var h = getHeight();
+		if (dimensions.value._0 === w && dimensions.value._1 === h)
+		{
+			return;
+		}
+
+		setTimeout(function() {
+			// Check again to see if the dimensions have changed.
+			// It is conceivable that the dimensions have changed
+			// again while some other event was being processed.
+			w = getWidth();
+			h = getHeight();
+			if (dimensions.value._0 === w && dimensions.value._1 === h)
+			{
+				return;
+			}
+			localRuntime.notify(dimensions.id, Tuple2(w, h));
+		}, 0);
+	}
+
+
+	localRuntime.addListener([dimensions.id], window, 'resize', resizeIfNeeded);
+
+
+	return localRuntime.Native.Window.values = {
+		dimensions: dimensions,
+		resizeIfNeeded: resizeIfNeeded
+	};
+};
+Elm.Window = Elm.Window || {};
+Elm.Window.make = function (_elm) {
+   "use strict";
+   _elm.Window = _elm.Window || {};
+   if (_elm.Window.values) return _elm.Window.values;
+   var _U = Elm.Native.Utils.make(_elm),$Basics = Elm.Basics.make(_elm),$Native$Window = Elm.Native.Window.make(_elm),$Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var dimensions = $Native$Window.dimensions;
+   var width = A2($Signal.map,$Basics.fst,dimensions);
+   var height = A2($Signal.map,$Basics.snd,dimensions);
+   return _elm.Window.values = {_op: _op,dimensions: dimensions,width: width,height: height};
 };Elm.Native.Effects = {};
 Elm.Native.Effects.make = function(localRuntime) {
 
@@ -11559,19 +11637,29 @@ Elm.Main.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $String = Elm.String.make(_elm),
-   $Task = Elm.Task.make(_elm);
+   $Task = Elm.Task.make(_elm),
+   $Window = Elm.Window.make(_elm);
    var _op = {};
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
+   var ratio = 3 / 2;
    var noEffects = function (m) {    return {ctor: "_Tuple2",_0: m,_1: $Effects.none};};
+   var Resize = function (a) {    return {ctor: "Resize",_0: a};};
    var PreviousPage = {ctor: "PreviousPage"};
    var NextPage = {ctor: "NextPage"};
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","30px")
+      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"padding","1em")
                                               ,A2(_op["=>"],"margin","auto")
-                                              ,A2(_op["=>"],"width","90vw")
+                                              ,A2(_op["=>"],"width","40em")
                                               ,A2(_op["=>"],"font-family","\'Ubuntu\'")
-                                              ,A2(_op["=>"],"font-size","2vw")]))]),
+                                              ,A2(_op["=>"],
+                                              "font-size",
+                                              function () {
+                                                 var _p0 = model.size;
+                                                 var x = _p0._0;
+                                                 var y = _p0._1;
+                                                 return _U.cmp($Basics.toFloat(x) / $Basics.toFloat(y),ratio) < 0 ? "2vw" : "3vh";
+                                              }())]))]),
       _U.list([A3($Html.node,"script",_U.list([$Html$Attributes.src("./highlight/highlight.pack.js")]),_U.list([]))
               ,A3($Html.node,
               "link",
@@ -11584,7 +11672,7 @@ Elm.Main.make = function (_elm) {
                                                       ,A2(_op["=>"],"border-radius","10px")
                                                       ,A2(_op["=>"],"padding","2em 3em")]))]),
               _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","50vw"),A2(_op["=>"],"overflow","auto")]))]),
+                      _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"height","25em"),A2(_op["=>"],"overflow","auto")]))]),
                       _U.list([$Markdown.toHtml(A2($Maybe.withDefault,"",A2($Array.get,model.currentPage,model.pages)))]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.style(_U.list([A2(_op["=>"],"border-top","solid black")]))]),
@@ -11613,18 +11701,19 @@ Elm.Main.make = function (_elm) {
              $History.replacePath(A2($Basics._op["++"],"#",$Basics.toString(m.currentPage + 1)))))};
    };
    var update = F2(function (action,model) {
-      var _p0 = action;
-      switch (_p0.ctor)
+      var _p1 = action;
+      switch (_p1.ctor)
       {case "Nop": return noEffects(model);
-         case "SetContent": return noEffects(_U.update(model,{pages: $Array.fromList(A2($String.split,"\n--\n",_p0._0))}));
-         case "SetCurrentPage": return noEffects(_U.update(model,{currentPage: _p0._0}));
+         case "SetContent": return noEffects(_U.update(model,{pages: $Array.fromList(A2($String.split,"\n--\n",_p1._0))}));
+         case "SetCurrentPage": return noEffects(_U.update(model,{currentPage: _p1._0}));
          case "NextPage": var newPage = model.currentPage + 1;
            return _U.cmp(newPage,$Array.length(model.pages)) < 0 ? updateHash(_U.update(model,{currentPage: newPage})) : noEffects(model);
-         default: var newPage = model.currentPage - 1;
-           return _U.cmp(newPage,0) > -1 ? updateHash(_U.update(model,{currentPage: newPage})) : noEffects(model);}
+         case "PreviousPage": var newPage = model.currentPage - 1;
+           return _U.cmp(newPage,0) > -1 ? updateHash(_U.update(model,{currentPage: newPage})) : noEffects(model);
+         default: return noEffects(_U.update(model,{size: _p1._0}));}
    });
-   var initialModel = {content: "",pages: $Array.empty,currentPage: 0};
-   var $const = F2(function (x,_p1) {    return x;});
+   var initialModel = {content: "",pages: $Array.empty,currentPage: 0,size: {ctor: "_Tuple2",_0: 0,_1: 0}};
+   var $const = F2(function (x,_p2) {    return x;});
    var getLocation = $Effects.task(A2($Task.map,
    SetCurrentPage,
    A2($Task.map,
@@ -11640,18 +11729,19 @@ Elm.Main.make = function (_elm) {
    var app = $StartApp.start({init: init
                              ,view: view
                              ,update: update
-                             ,inputs: _U.list([A2($Signal.map,function (s) {    return s ? NextPage : Nop;},$Keyboard.space)
+                             ,inputs: _U.list([A2($Signal.map,Resize,$Window.dimensions)
+                                              ,A2($Signal.map,function (s) {    return s ? NextPage : Nop;},$Keyboard.space)
                                               ,A2($Signal.map,function (s) {    return s ? NextPage : Nop;},$Keyboard.enter)
                                               ,A2($Signal.map,
                                               function (s) {
-                                                 var _p2 = s.x;
-                                                 switch (_p2)
+                                                 var _p3 = s.x;
+                                                 switch (_p3)
                                                  {case -1: return PreviousPage;
                                                     case 1: return NextPage;
                                                     default: return Nop;}
                                               },
                                               $Keyboard.arrows)])});
-   var Model = F3(function (a,b,c) {    return {content: a,pages: b,currentPage: c};});
+   var Model = F4(function (a,b,c,d) {    return {content: a,pages: b,currentPage: c,size: d};});
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    var main = app.html;
    return _elm.Main.values = {_op: _op
@@ -11669,8 +11759,10 @@ Elm.Main.make = function (_elm) {
                              ,SetCurrentPage: SetCurrentPage
                              ,NextPage: NextPage
                              ,PreviousPage: PreviousPage
+                             ,Resize: Resize
                              ,noEffects: noEffects
                              ,updateHash: updateHash
                              ,update: update
+                             ,ratio: ratio
                              ,view: view};
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script></body></html>
