@@ -73,3 +73,53 @@ message Person {
   "email": "test@example.com"
 }
 ```
+
+--
+
+## Usage
+
+```
+protoc --elm_out=./elm --go_out=./go proto/*.proto
+```
+
+--
+
+## Implementing a new plugin
+
+> protoc (aka the Protocol Compiler) can be extended via plugins. A plugin is
+> just a program that reads a CodeGeneratorRequest from stdin and writes a
+> CodeGeneratorResponse to stdout.
+
+> A plugin executable needs only to be placed somewhere in the path. The
+> plugin should be named "protoc-gen-$NAME", and will then be used when the
+> flag "--${NAME}_out" is passed to protoc.
+
+https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.compiler.plugin.pb
+
+--
+
+## API for protoc plugins
+
+```protobuf
+message CodeGeneratorRequest {
+  repeated string file_to_generate = 1;
+  optional string parameter = 2;
+  repeated FileDescriptorProto proto_file = 15;
+}
+
+message CodeGeneratorResponse {
+  optional string error = 1;
+  message File {
+    optional string name = 1;
+    optional string insertion_point = 2;
+    optional string content = 15;
+  }
+  repeated File file = 15;
+}
+```
+
+--
+
+## protoc-gen-elm
+
+- Written in Go.
