@@ -2,6 +2,8 @@
 
 _Cross-language data serialization and RPC for the web._
 
+https://github.com/tiziano88/elm-protobuf
+
 ## Tiziano Santoro
 
 ### _Software Engineer - Google_
@@ -40,7 +42,8 @@ _Cross-language data serialization and RPC for the web._
     message Person {
       required string name = 1;
       optional string email = 2;
-      repeated Order order = 3;
+      optional Address address = 3;
+      repeated Order orders = 3;
     }
     ```
 
@@ -50,7 +53,8 @@ _Cross-language data serialization and RPC for the web._
     message Person {
       string name = 1;
       string email = 2;
-      repeated Order order = 3;
+      Address address = 3;
+      repeated Order orders = 4;
     }
     ```
 
@@ -126,25 +130,29 @@ message CodeGeneratorResponse {
 
 --
 
-## Types
-
-### Primitive
+## Primitive Types
 
 - `{double,float}` → `Float`
 - `{int,uint,sint,fixed}{32,64}` → `Int`
 - `bool` → `Bool`
 - `string` → `String`
 
-### Enums
+--
 
-Converted to corresponding Elm types.
+## Enum Types
+
+- Must start with zero value (default)
+- Converted to new Elm type
 
 ```protobuf
 enum Colour {
   COLOUR_UNSPECIFIED = 0;
+  
   RED = 1;
-  BLUE = 2;
-  GREEN = 3;
+  GREEN = 2;
+  BLUE = 3;
+  
+  BLACK = 99;
 }
 ```
 
@@ -152,6 +160,29 @@ enum Colour {
 type Colour
   = ColourUnspecified
   | Red
-  | Blue
   | Green
+  | Blue
+  | Black
+```
+
+## Message Types
+
+- Converted to Elm record type alias
+
+```protobuf
+message Person {
+  string name = 1;
+  string email = 2;
+  Address address = 3;
+  repeated Order orders = 4;
+}
+```
+
+```elm
+type alias Person =
+  { name : String
+  , email : String
+  , address : Maybe Address
+  , orders : List Order
+  }
 ```
