@@ -39,8 +39,8 @@ _Cross-language data serialization and RPC for the web._
     ```protobuf
     message Person {
       required string name = 1;
-      required int32 id = 2;
-      optional string email = 3;
+      optional string email = 2;
+      repeated Order order = 3;
     }
     ```
 
@@ -49,8 +49,8 @@ _Cross-language data serialization and RPC for the web._
     ```protobuf
     message Person {
       string name = 1;
-      int32 id = 2;
-      string email = 3;
+      string email = 2;
+      repeated Order order = 3;
     }
     ```
 
@@ -123,3 +123,35 @@ message CodeGeneratorResponse {
 ## protoc-gen-elm
 
 - Written in Go.
+
+--
+
+## Types
+
+### Primitive
+
+- `{double,float}` → `Float`
+- `{int,uint,sint,fixed}{32,64}` → `Int`
+- `bool` → `Bool`
+- `string` → `String`
+
+### Enums
+
+Converted to corresponding Elm types.
+
+```protobuf
+enum Colour {
+  COLOUR_UNSPECIFIED = 0;
+  RED = 1;
+  BLUE = 2;
+  GREEN = 3;
+}
+```
+
+```elm
+type Colour
+  = ColourUnspecified
+  | Red
+  | Blue
+  | Green
+```
