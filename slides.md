@@ -93,10 +93,10 @@ protoc --elm_out=./elm --go_out=./go proto/*.proto
 > protoc (aka the Protocol Compiler) can be extended via plugins. A plugin is
 > just a program that reads a CodeGeneratorRequest from stdin and writes a
 > CodeGeneratorResponse to stdout.
-
-> A plugin executable needs only to be placed somewhere in the path. The
-> plugin should be named "protoc-gen-$NAME", and will then be used when the
-> flag "--${NAME}_out" is passed to protoc.
+>
+> A plugin executable needs only to be placed somewhere in the path. The plugin
+> should be named "protoc-gen-$NAME", and will then be used when the flag
+> "--${NAME}_out" is passed to protoc.
 
 https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.compiler.plugin.pb
 
@@ -126,32 +126,32 @@ message CodeGeneratorResponse {
 
 ## protoc-gen-elm
 
-- Written in Go.
+-   Written in Go.
 
 --
 
 ## Primitive Types
 
-- `{double,float}` → `Float`
-- `{int,uint,sint,fixed}{32,64}` → `Int`
-- `bool` → `Bool`
-- `string` → `String`
+-   `{double,float}` → `Float`
+-   `{int,uint,sint,fixed}{32,64}` → `Int`
+-   `bool` → `Bool`
+-   `string` → `String`
 
 --
 
 ## Enum Types
 
-- Must start with zero value (default)
-- Converted to new Elm type
+-   Must start with zero value (default)
+-   Converted to new Elm type
 
 ```protobuf
 enum Colour {
   COLOUR_UNSPECIFIED = 0;
-  
+
   RED = 1;
   GREEN = 2;
   BLUE = 3;
-  
+
   BLACK = 99;
 }
 ```
@@ -169,7 +169,7 @@ type Colour
 
 ## Message Types
 
-- Converted to Elm record type alias
+-   Converted to Elm record type alias
 
 ```protobuf
 message Person {
@@ -231,30 +231,32 @@ object4 : (a -> b -> c -> d -> value)
 object8 : ...
 ```
 
-- _lift_ combinators for various arity.
-- does not scale beyond 8 arguments
+-   _lift_ combinators for various arity.
+-   does not scale beyond 8 arguments
 
 --
 
 ## Monadic-style parsing
 
-- `Json.Decode.Decoder a` is (conceptually) a Monad
-- elm does not have type classes or Higher Kinded Types, so this fact cannot be expressed within the type system
-- return:
-  - `map : (a -> b) -> (Decoder a -> Decoder b)`
-  - `object1 : (a -> value) -> (Decoder a -> Decoder value)`
-- bind (`>>=`):
-  - `andThen : Decoder a -> (a -> Decoder b) -> Decoder b`
-- `Json.Decode.Decoder a` is therefore also (conceptually) an Applicative Functor
+-   `Json.Decode.Decoder a` is (conceptually) a Monad
+-   elm does not have type classes or Higher Kinded Types, so this fact cannot
+    be expressed within the type system
+-   return:
+    -   `map : (a -> b) -> (Decoder a -> Decoder b)`
+    -   `object1 : (a -> value) -> (Decoder a -> Decoder value)`
+-   bind (`>>=`):
+    -   `andThen : Decoder a -> (a -> Decoder b) -> Decoder b`
+-   `Json.Decode.Decoder a` is therefore also (conceptually) an Applicative
+    Functor
 
 --
 
 ## Applicative-style parsing
 
-- pure (`<$>`):
-  - `map : (a -> b) -> (Decoder a -> Decoder b)`
-- sequence (`<*>`):
-  - ```f `andThen` (\x -> x <$> v)```
+-   pure (`<$>`):
+    -   `map : (a -> b) -> (Decoder a -> Decoder b)`
+-   sequence (`<*>`):
+    -   ``f `andThen` (\x -> x <$> v)``
 
 ```elm
 (<$>) : (a -> b) -> Decoder a -> Decoder b

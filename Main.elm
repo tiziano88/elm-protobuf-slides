@@ -140,7 +140,7 @@ ratio = 3/2
 
 markdownOptions : Markdown.Options
 markdownOptions =
-  { githubFlavored = Just { tables = True, breaks = True }
+  { githubFlavored = Just { tables = True, breaks = False }
   , defaultHighlighting = Nothing
   , sanitize = False
   , smartypants = True
@@ -160,7 +160,9 @@ view model =
     ]
     [ Html.node "script" [ src "./highlight/highlight.pack.js" ] []
     , Html.node "link" [ rel "stylesheet", href "http://fonts.googleapis.com/css?family=Ubuntu" ] []
+    , Html.node "link" [ rel "stylesheet", href "http://fonts.googleapis.com/css?family=Ubuntu Mono" ] []
     , Html.node "link" [ rel "stylesheet", href "./highlight/styles/solarized-light.css" ] []
+    , Html.node "link" [ rel "stylesheet", href "./style.css" ] []
     , Html.div
       [ style
         [ "background-color" => "white"

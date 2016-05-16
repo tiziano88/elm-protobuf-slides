@@ -8436,7 +8436,7 @@ _user$project$Main_ops['=>'] = F2(
 	});
 var _user$project$Main$markdownOptions = {
 	githubFlavored: _elm_lang$core$Maybe$Just(
-		{tables: true, breaks: true}),
+		{tables: true, breaks: false}),
 	defaultHighlighting: _elm_lang$core$Maybe$Nothing,
 	sanitize: false,
 	smartypants: true
@@ -8556,7 +8556,27 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html_Attributes$rel('stylesheet'),
+						_elm_lang$html$Html_Attributes$href('http://fonts.googleapis.com/css?family=Ubuntu Mono')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[])),
+				A3(
+				_elm_lang$html$Html$node,
+				'link',
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$rel('stylesheet'),
 						_elm_lang$html$Html_Attributes$href('./highlight/styles/solarized-light.css')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[])),
+				A3(
+				_elm_lang$html$Html$node,
+				'link',
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$rel('stylesheet'),
+						_elm_lang$html$Html_Attributes$href('./style.css')
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[])),

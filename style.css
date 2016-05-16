@@ -1,0 +1,15 @@
+pre {
+  background-color: #fdf6e3;
+  color: #657b83;
+}
+
+code {
+  font-family: "Ubuntu Mono";
+}
+
+blockquote {
+  border-left: solid;
+  margin-left: 10px;
+  padding-left: 10px;
+  font-style: italic;
+}
