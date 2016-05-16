@@ -126,9 +126,9 @@ message CodeGeneratorResponse {
 
 ## protoc-gen-elm
 
--   Written in Go
--   No dependencies
-    -   Not even runtime library (though it may change)
+-   Written in Go.
+-   No runtime dependencies.
+    -   Not runtime library (though it may change).
 
 --
 
@@ -143,8 +143,8 @@ message CodeGeneratorResponse {
 
 ## Enum Types
 
--   Must start with zero value (default)
--   Converted to new Elm type
+-   Must start with zero value (default).
+-   Converted to new Elm type.
 
 ```protobuf
 enum Colour {
@@ -207,7 +207,7 @@ colourDecoder =
 
 ## Message Types
 
--   Converted to Elm record type alias
+-   Converted to Elm record type alias.
 
 ```protobuf
 message Person {
@@ -279,13 +279,13 @@ object8 : ...
 ```
 
 -   _lift_ combinators for various arity.
--   does not scale beyond 8 arguments
+-   Does not scale beyond 8 arguments.
 
 --
 
 ## Monadic-style parsing
 
--   `Json.Decode.Decoder a` is (conceptually) a Monad
+-   `Json.Decode.Decoder a` is (conceptually) a Monad.
 -   In Haskell:
 
     ```haskell
@@ -347,12 +347,12 @@ person <$> stringDecoder <*> stringDecoder
 
 ## Testing
 
--   Equivalence testing
-    -   Written in Go
-    -   Only test the protoc plugin
+-   Equivalence testing:
+    -   Written in Go.
+    -   Only test the protoc plugin.
     -   Convert Proto file to Elm using the plugin, compare output against
-        golden
--   Integration testing
-    -   Written in Elm
-    -   Also test the generated elm code
-    -   JSON encode/decode sample data
+        golden.
+-   Integration testing:
+    -   Written in Elm.
+    -   Also test the generated elm code.
+    -   JSON encode/decode sample data.
