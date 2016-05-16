@@ -28,7 +28,11 @@ https://github.com/tiziano88/elm-protobuf
 ## How it works
 
 -   Define message formats in a `.proto` file.
--   Use the protocol buffer compiler.
+-   Run the protocol buffer compiler for the relevant target language(s):
+
+    ```
+    protoc --elm_out=./elm --go_out=./go proto/*.proto
+    ```
 
 --
 
@@ -85,14 +89,6 @@ message Person {
 
 --
 
-## Usage
-
-```
-protoc --elm_out=./elm --go_out=./go proto/*.proto
-```
-
---
-
 ## Implementing a new plugin
 
 > `protoc` (aka the Protocol Compiler) can be extended via plugins. A plugin is
@@ -133,8 +129,8 @@ message CodeGeneratorResponse {
 
 -   Written in Go.
 -   Generates Elm code.
--   Generated code has no runtime dependencies.
-    -   No runtime library (though it may change in the future).
+-   Generated code has no runtime dependencies apart from `elm-lang/core`.
+    -   No protobuf runtime library (though it may change in the future).
 
 --
 
@@ -201,6 +197,8 @@ colourEncoder v =
     Json.Encode.string <| lookup v
 ```
 
+[Json.Encode.string](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Encode#string)
+
 --
 
 ## Enum decoder
@@ -218,6 +216,8 @@ colourDecoder =
   in
     Json.Decode.map lookup string
 ```
+
+[Json.Decode.map](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map)
 
 --
 
@@ -258,6 +258,8 @@ personEncoder v =
     ]
 ```
 
+[Json.Encode.object](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Encode#object)
+
 --
 
 ## Message decoder
@@ -272,6 +274,8 @@ personDecoder =
     (optionalFieldDecoder addressDecoder "address")
     (repeatedFieldDecoder orderDecoder "orders")
 ```
+
+[Json.Decode.object4](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#object4)
 
 --
 
@@ -294,8 +298,69 @@ object3 : (a -> b -> c -> value)
 object8 : ...
 ```
 
--   _lift_ combinators for various arity.
+-   _Lift_ regular constructors of various arity to corresponding Decoder
+    instances.
 -   Does not scale beyond 8 arguments.
+
+--
+
+## Generalizing decoders
+
+```elm
+map : (a -> b) -> Decoder a -> Decoder b
+
+decoderA : Decoder A
+decoderB : Decoder B
+```
+
+[Json.Decode.map](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map)
+
+```elm
+type alias Foo1 = { a : A }
+Foo1 : A -> Foo1
+
+map Foo1 decoderA : Decoder Foo1
+```
+
+```elm
+type alias Foo2 = { a : A, b : B }
+Foo2 : A -> B -> Foo2
+
+map Foo2 decoderA : Decoder (B -> Foo2)
+```
+
+```elm
+??? : Decoder (a -> b) -> Decoder a -> Decoder b
+```
+
+--
+
+## The missing link
+
+```elm
+??? : Decoder (a -> b) -> Decoder a -> Decoder b
+```
+
+```elm
+map : (a -> b) -> Decoder a -> Decoder b
+andThen : Decoder a -> (a -> Decoder b) -> Decoder b
+```
+
+[Json.Decode.map](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map)
+[Json.Decode.andThen](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#andThen)
+
+
+```elm
+ap : Decoder (a -> b) -> Decoder a -> Decoder b
+ap d1 d2 = andThen d1 (\x -> map x d2)
+ap d1 d2 = d1 `andThen` (\x -> map x d2)
+
+d1 : Decoder (A -> B)
+d2 : Decoder A
+
+andThen d1 : ((A -> B) -> Decoder B) -> Decoder B
+(\x -> map x d2) : (A -> B) -> Decoder B
+```
 
 --
 
