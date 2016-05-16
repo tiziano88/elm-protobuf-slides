@@ -172,7 +172,7 @@ type Colour
 ## Enum Encoder
 
 ```elm
-colourEncoder : Colour -> Value
+colourEncoder : Colour -> Json.Encode.Value
 colourEncoder v =
   let
     lookup s = case s of
@@ -182,7 +182,7 @@ colourEncoder v =
       Blue -> "BLUE"
       Black -> "BLACK"
   in
-    string <| lookup v
+    Json.Encode.string <| lookup v
 ```
 
 --
@@ -190,7 +190,7 @@ colourEncoder v =
 ## Enum Decoder
 
 ```elm
-colourDecoder : Decoder Colour
+colourDecoder : Json.Decode.Decoder Colour
 colourDecoder =
   let
     lookup s = case s of
@@ -200,7 +200,7 @@ colourDecoder =
       "BLUE" -> Blue
       "BLACK" -> Black
   in
-    map lookup string
+    Json.Decode.map lookup string
 ```
 
 --
@@ -232,7 +232,7 @@ type alias Person =
 ## Message Encoder
 
 ```elm
-personEncoder : Person -> Value
+personEncoder : Person -> Json.Encode.Value
 personEncoder v =
   Json.Encode.object
     [ ("name", Json.Encode.string v.name)
@@ -247,14 +247,14 @@ personEncoder v =
 ## Message Decoder
 
 ```elm
-personDecoder : Json.Decoder Person
+personDecoder : Json.Decode.Decoder Person
 personDecoder =
-  Json.object4
+  Json.Decode.object4
     Person
-    stringDecoder
-    stringDecoder
-    (optionalFieldDecoder addressDecoder)
-    (repeatedFieldDecoder orderDecoder)
+    (stringFieldDecoder "name")
+    (stringFieldDecoder "email")
+    (optionalFieldDecoder addressDecoder "address")
+    (repeatedFieldDecoder orderDecoder "orders")
 ```
 
 --
@@ -286,33 +286,61 @@ object8 : ...
 ## Monadic-style parsing
 
 -   `Json.Decode.Decoder a` is (conceptually) a Monad
--   elm does not have type classes or Higher Kinded Types, so this fact cannot
-    be expressed within the type system
--   return:
-    -   `map : (a -> b) -> (Decoder a -> Decoder b)`
-    -   `object1 : (a -> value) -> (Decoder a -> Decoder value)`
--   bind (`>>=`):
-    -   `andThen : Decoder a -> (a -> Decoder b) -> Decoder b`
+-   In Haskell:
+
+    ```haskell
+    class (Applicative m) => Monad m where
+      (>>=) :: m a -> (a -> m b) -> m b
+      return :: a -> m a
+    ```
+
+-   In Elm:
+
+    ```elm
+    map : (a -> b) -> (Decoder a -> Decoder b)
+    object1 : (a -> value) -> (Decoder a -> Decoder value)
+    andThen : Decoder a -> (a -> Decoder b) -> Decoder b
+    ```
+
 -   `Json.Decode.Decoder a` is therefore also (conceptually) an Applicative
     Functor
 
 --
 
-## Applicative-style parsing
+## Applicative-style Parsing in Haskell
 
--   pure (`<$>`):
-    -   `map : (a -> b) -> (Decoder a -> Decoder b)`
--   sequence (`<*>`):
-    -   ``f `andThen` (\x -> x <$> v)``
+```haskell
+class (Functor f) => Applicative f where
+  pure :: a -> f a
+  (<*>) :: f (a -> b) -> f a -> f b
+```
+
+```haskell
+person :: String -> String -> Address -> List Order -> Person
+
+stringDecoder :: Decoder String
+addressDecoder :: Decoder Address
+ordersDecoder :: Decoder (List Order)
+
+person <$> stringDecoder
+  == fmap person stringDecoder
+  :: Decoder (String -> Address -> List Order -> Person)
+
+person <$> stringDecoder <*> stringDecoder
+  <*> addressDecoder <*> ordersDecoder
+  :: Decoder Person
+```
+
+--
+
+## Applicative-style Parsing in Elm
 
 ```elm
-(<$>) : (a -> b) -> Decoder a -> Decoder b
-(<$>) =
-  JD.map
+(<$>) : (a -> b) -> (Decoder a -> Decoder b)
+(<$>) = map
 
 (<*>) : Decoder (a -> b) -> Decoder a -> Decoder b
-(<*>) f v =
-  f `andThen` \x -> x <$> v
+(<*>) f v = f `andThen` (\x -> x <$> v)
 ```
 
 --
@@ -322,7 +350,7 @@ object8 : ...
 -   Equivalence testing
     -   Written in Go
     -   Only test the protoc plugin
-    -   Convert proto file to elm using the plugin, compare output against
+    -   Convert Proto file to Elm using the plugin, compare output against
         golden
 -   Integration testing
     -   Written in Elm
