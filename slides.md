@@ -18,12 +18,10 @@ https://github.com/tiziano88/elm-protobuf
 -   Developed by Google.
 -   First released in 2008.
 -   Officially supported languages: C++, C#, Go, Java, Python.
-
---
-
 -   Schema for data.
 -   Used for storage and RPCs.
 -   Efficient binary encoding.
+-   Initially only supported binary encoding, now also JSON.
 
 --
 
@@ -65,16 +63,23 @@ https://github.com/tiziano88/elm-protobuf
 ```protobuf
 message Person {
   string name = 1;
-  int32 id = 2;
-  string email = 3;
+  string email = 2;
+  Address address = 3;
+  repeated Order orders = 4;
 }
 ```
 
 ```json
 {
   "name": "John Smith",
-  "id": 123,
-  "email": "test@example.com"
+  "email": "test@example.com",
+  "address": {
+    "city": "London",
+    "country": "GB"
+  },
+  "orders": [
+    ...
+  ]
 }
 ```
 
@@ -90,13 +95,13 @@ protoc --elm_out=./elm --go_out=./go proto/*.proto
 
 ## Implementing a new plugin
 
-> protoc (aka the Protocol Compiler) can be extended via plugins. A plugin is
-> just a program that reads a CodeGeneratorRequest from stdin and writes a
-> CodeGeneratorResponse to stdout.
+> `protoc` (aka the Protocol Compiler) can be extended via plugins. A plugin is
+> just a program that reads a `CodeGeneratorRequest` from stdin and writes a
+> `CodeGeneratorResponse` to stdout.
 >
 > A plugin executable needs only to be placed somewhere in the path. The plugin
-> should be named "protoc-gen-$NAME", and will then be used when the flag
-> "--${NAME}_out" is passed to protoc.
+> should be named `protoc-gen-$NAME`, and will then be used when the flag
+> `--${NAME}_out` is passed to protoc.
 
 https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.compiler.plugin.pb
 
@@ -127,33 +132,44 @@ message CodeGeneratorResponse {
 ## protoc-gen-elm
 
 -   Written in Go.
--   No runtime dependencies.
-    -   Not runtime library (though it may change).
+-   Generates Elm code.
+-   Generated code has no runtime dependencies.
+    -   No runtime library (though it may change in the future).
 
 --
 
-## Primitive Types
+## Primitive types
 
 -   `{double,float}` → `Float`
 -   `{int,uint,sint,fixed}{32,64}` → `Int`
 -   `bool` → `Bool`
 -   `string` → `String`
 
+-   Zero value by default (in proto3):
+
+    -   numeric: `0` / `0.0`
+    -   string: `""`
+    -   bool: `false`
+    -   message field: absent
+    -   repeated field: empty list
+    -   enum field: default enum value
+
+-   If a field is not explicitly set, it is the same as its default value, and
+    it may be skipped during serialisation.
+
 --
 
-## Enum Types
+## Enum types
 
 -   Must start with zero value (default).
--   Converted to new Elm type.
+-   Converted to new Elm type (sum type).
 
 ```protobuf
 enum Colour {
   COLOUR_UNSPECIFIED = 0;
-
   RED = 1;
   GREEN = 2;
   BLUE = 3;
-
   BLACK = 99;
 }
 ```
@@ -169,7 +185,7 @@ type Colour
 
 --
 
-## Enum Encoder
+## Enum encoder
 
 ```elm
 colourEncoder : Colour -> Json.Encode.Value
@@ -187,7 +203,7 @@ colourEncoder v =
 
 --
 
-## Enum Decoder
+## Enum decoder
 
 ```elm
 colourDecoder : Json.Decode.Decoder Colour
@@ -205,9 +221,9 @@ colourDecoder =
 
 --
 
-## Message Types
+## Message types
 
--   Converted to Elm record type alias.
+-   Converted to Elm record type alias (product type).
 
 ```protobuf
 message Person {
@@ -229,7 +245,7 @@ type alias Person =
 
 --
 
-## Message Encoder
+## Message encoder
 
 ```elm
 personEncoder : Person -> Json.Encode.Value
@@ -244,7 +260,7 @@ personEncoder v =
 
 --
 
-## Message Decoder
+## Message decoder
 
 ```elm
 personDecoder : Json.Decode.Decoder Person
@@ -307,7 +323,7 @@ object8 : ...
 
 --
 
-## Applicative-style Parsing in Haskell
+## Applicative-style parsing in Haskell
 
 ```haskell
 class (Functor f) => Applicative f where
@@ -333,7 +349,7 @@ person <$> stringDecoder <*> stringDecoder
 
 --
 
-## Applicative-style Parsing in Elm
+## Applicative-style parsing in Elm
 
 ```elm
 (<$>) : (a -> b) -> (Decoder a -> Decoder b)
