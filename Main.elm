@@ -1,4 +1,5 @@
 import Array exposing (Array)
+import Char
 -- import History
 import Html
 import Html.App as Html
@@ -21,14 +22,15 @@ main =
     , subscriptions =
       \_ -> Sub.batch
         [ Window.resizes Resize
-        , Keyboard.presses (\k -> if (k == 12) then NextPage else Nop)
-        --, Keyboard.enter |> Signal.map (\s -> if s then NextPage else Nop)
-        --, Keyboard.arrows |> Signal.map
-          --(\s ->
-            --case s.x of
-              ---1 -> PreviousPage
-              --1 -> NextPage
-              --_ -> Nop)
+        , Keyboard.presses (\k ->
+          case k of
+            -- http://keycode.info/
+            13 -> NextPage -- enter
+            32 -> NextPage -- space
+            37 -> PreviousPage -- left arrow
+            39 -> NextPage -- right arrow
+            _ -> Nop
+          )
         ]
     }
 
@@ -132,7 +134,9 @@ update msg model =
     Resize s ->
       noEffects { model | size = s }
 
+
 ratio = 3/2
+
 
 markdownOptions : Markdown.Options
 markdownOptions =
@@ -141,6 +145,7 @@ markdownOptions =
   , sanitize = False
   , smartypants = True
   }
+
 
 view model =
   Html.div
