@@ -1,83 +1,71 @@
 import Array exposing (Array)
-import Effects exposing (Effects)
-import History
+-- import History
 import Html
+import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Keyboard
-import Location
+-- import Location
 import Markdown
-import StartApp
 import String
 import Task exposing (Task)
 import Window
 
 
-main : Signal Html.Html
 main =
-  app.html
+  Html.program
+    { init = init
+    , view = view
+    , update = update
+    , subscriptions =
+      \_ -> Sub.batch
+        [ Window.resizes Resize
+        , Keyboard.presses (\k -> if (k == 12) then NextPage else Nop)
+        --, Keyboard.enter |> Signal.map (\s -> if s then NextPage else Nop)
+        --, Keyboard.arrows |> Signal.map
+          --(\s ->
+            --case s.x of
+              ---1 -> PreviousPage
+              --1 -> NextPage
+              --_ -> Nop)
+        ]
+    }
 
-
-port tasks : Signal (Task Effects.Never ())
-port tasks =
-  app.tasks
 
 type alias Model =
   { content : String
   , pages : Array String
   , currentPage : Int
-  , size : (Int, Int)
+  , size : Window.Size
   }
 
 
 url = "./slides.md"
 
 
-getContent : Effects Action
+getContent : Cmd Msg
 getContent =
   Http.getString url
-    |> Task.toMaybe
-    |> Task.map (Maybe.withDefault "")
-    |> Task.map SetContent
-    |> Effects.task
+    |> Task.perform (always Nop) SetContent
 
 
-getLocation : Effects Action
+getLocation : Cmd Msg
 getLocation =
-  Location.location
-    |> Task.map (\l -> l.hash)
-    |> Task.map (String.dropLeft 1)
-    |> Task.map String.toInt
-    |> Task.map (Result.withDefault 1)
-    |> Task.map (\x -> x - 1)
-    |> Task.map SetCurrentPage
-    |> Effects.task
-
-
-app =
-  StartApp.start
-    { init = init
-    , view = view
-    , update = update
-    , inputs =
-      [ Window.dimensions |> Signal.map Resize
-      , Keyboard.space |> Signal.map (\s -> if s then NextPage else Nop)
-      , Keyboard.enter |> Signal.map (\s -> if s then NextPage else Nop)
-      , Keyboard.arrows |> Signal.map
-        (\s ->
-          case s.x of
-            -1 -> PreviousPage
-            1 -> NextPage
-            _ -> Nop)
-      ]
-    }
+  Cmd.none
+  --Location.location
+    --|> Task.map (\l -> l.hash)
+    --|> Task.map (String.dropLeft 1)
+    --|> Task.map String.toInt
+    --|> Task.map (Result.withDefault 1)
+    --|> Task.map (\x -> x - 1)
+    --|> Task.perform (always Nop) SetCurrentPage
 
 const x _ = x
 
-init : (Model, Effects Action)
+init : (Model, Cmd Msg)
 init =
-  (initialModel, Effects.batch [ getContent, getLocation ])
+  (initialModel, Cmd.batch [ getContent, getLocation ])
 
 
 initialModel : Model
@@ -85,36 +73,37 @@ initialModel =
   { content = ""
   , pages = Array.empty
   , currentPage = 0
-  , size = (0,0)
+  , size = { width = 0, height = 0 }
   }
 
 
-type Action
+type Msg
   = Nop
   | SetContent String
   | SetCurrentPage Int
   | NextPage
   | PreviousPage
-  | Resize (Int, Int)
+  | Resize Window.Size
 
 
-noEffects : a -> (a, Effects b)
+noEffects : a -> (a, Cmd b)
 noEffects m =
-  (m, Effects.none)
+  (m, Cmd.none)
 
 
-updateHash : Model -> (Model, Effects Action)
+updateHash : Model -> (Model, Cmd Msg)
 updateHash m =
-  ( m
-  , History.replacePath ("#" ++ toString (m.currentPage + 1))
-    |> Task.map (\x -> Nop)
-    |> Effects.task
-  )
+  (m, Cmd.none)
+  --( m
+  --, History.replacePath ("#" ++ toString (m.currentPage + 1))
+    --|> Task.map (\x -> Nop)
+    --|> Effects.task
+  --)
 
 
-update : Action -> Model -> (Model, Effects Action)
-update action model =
-  case action of
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+  case msg of
     Nop ->
       noEffects model
 
@@ -145,7 +134,15 @@ update action model =
 
 ratio = 3/2
 
-view address model =
+markdownOptions : Markdown.Options
+markdownOptions =
+  { githubFlavored = Just { tables = True, breaks = True }
+  , defaultHighlighting = Nothing
+  , sanitize = False
+  , smartypants = True
+  }
+
+view model =
   Html.div
     [ style
       [ "padding" => "1em"
@@ -153,10 +150,7 @@ view address model =
       , "width" => "40em"
       , "font-family" => "'Ubuntu'"
       , "font-size" =>
-        let
-          (x,y) = model.size
-        in
-          if (toFloat x)/(toFloat y) < ratio then "2vw" else "3vh"
+        if (toFloat model.size.width)/(toFloat model.size.height) < ratio then "2vw" else "3vh"
       ]
     ]
     [ Html.node "script" [ src "./highlight/highlight.pack.js" ] []
@@ -176,13 +170,13 @@ view address model =
           , "overflow" => "auto"
           ]
         ]
-        [ Markdown.toHtml <| Maybe.withDefault "" <| Array.get model.currentPage model.pages ]
+        [ Markdown.toHtmlWith markdownOptions [] <| Maybe.withDefault "" <| Array.get model.currentPage model.pages ]
       , Html.div -- Footer.
         [ style
           [ "border-top" => "solid black" ]
         ]
         [ Html.a
-          [ onClick address PreviousPage
+          [ onClick PreviousPage
           , href "#"
           ]
           [ Html.text "<<<" ]
@@ -199,7 +193,7 @@ view address model =
         , Html.span []
           [ Html.text (toString <| Array.length model.pages) ]
         , Html.a
-          [ onClick address NextPage
+          [ onClick NextPage
           , href "#"
           ]
           [ Html.text ">>>" ]
