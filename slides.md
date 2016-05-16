@@ -165,6 +165,8 @@ type Colour
   | Black
 ```
 
+--
+
 ## Message Types
 
 - Converted to Elm record type alias
@@ -185,4 +187,81 @@ type alias Person =
   , address : Maybe Address
   , orders : List Order
   }
+```
+
+--
+
+## Decoding
+
+```elm
+personDecoder : Json.Decoder Person
+personDecoder =
+  Json.object4
+    Person
+    stringDecoder
+    stringDecoder
+    (optionalFieldDecoder addressDecoder)
+    (repeatedFieldDecoder orderDecoder)
+```
+
+--
+
+## objectN combinators
+
+```elm
+object1 : (a -> value)
+    -> Decoder a
+    -> Decoder value
+object2 : (a -> b -> value)
+    -> Decoder a
+    -> Decoder b
+    -> Decoder value
+object3 : (a -> b -> c -> value)
+    -> Decoder a
+    -> Decoder b
+    -> Decoder c
+    -> Decoder value
+object4 : (a -> b -> c -> d -> value)
+    -> Decoder a
+    -> Decoder b
+    -> Decoder c
+    -> Decoder d
+    -> Decoder value
+...
+object8 : ...
+```
+
+- _lift_ combinators for various arity.
+- does not scale beyond 8 arguments
+
+--
+
+## Monadic-style parsing
+
+- `Json.Decode.Decoder a` is (conceptually) a Monad
+- elm does not have type classes or Higher Kinded Types, so this fact cannot be expressed within the type system
+- return:
+  - `map : (a -> b) -> (Decoder a -> Decoder b)`
+  - `object1 : (a -> value) -> (Decoder a -> Decoder value)`
+- bind (`>>=`):
+  - `andThen : Decoder a -> (a -> Decoder b) -> Decoder b`
+- `Json.Decode.Decoder a` is therefore also (conceptually) an Applicative Functor
+
+--
+
+## Applicative-style parsing
+
+- pure (`<$>`):
+  - `map : (a -> b) -> (Decoder a -> Decoder b)`
+- sequence (`<*>`):
+  - ```f `andThen` (\x -> x <$> v)```
+
+```elm
+(<$>) : (a -> b) -> Decoder a -> Decoder b
+(<$>) =
+  JD.map
+
+(<*>) : Decoder (a -> b) -> Decoder a -> Decoder b
+(<*>) f v =
+  f `andThen` \x -> x <$> v
 ```
