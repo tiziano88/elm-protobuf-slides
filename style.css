@@ -1,10 +1,11 @@
-pre {
-  background-color: #fdf6e3;
-  color: #657b83;
-}
-
 code {
   font-family: "Ubuntu Mono";
+}
+
+pre {
+  font-family: "Ubuntu Mono";
+  background-color: #fdf6e3;
+  color: #657b83;
 }
 
 blockquote {

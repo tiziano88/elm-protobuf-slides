@@ -22,13 +22,15 @@ main =
     , subscriptions =
       \_ -> Sub.batch
         [ Window.resizes Resize
-        , Keyboard.presses (\k ->
+        , Keyboard.downs (\k ->
           case k of
             -- http://keycode.info/
             13 -> NextPage -- enter
             32 -> NextPage -- space
             37 -> PreviousPage -- left arrow
+            38 -> PreviousPage -- up arrow
             39 -> NextPage -- right arrow
+            40 -> NextPage -- down arrow
             _ -> Nop
           )
         ]

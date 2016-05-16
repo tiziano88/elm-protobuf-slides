@@ -126,7 +126,9 @@ message CodeGeneratorResponse {
 
 ## protoc-gen-elm
 
--   Written in Go.
+-   Written in Go
+-   No dependencies
+    -   Not even runtime library (though it may change)
 
 --
 
@@ -167,6 +169,42 @@ type Colour
 
 --
 
+## Enum Encoder
+
+```elm
+colourEncoder : Colour -> Value
+colourEncoder v =
+  let
+    lookup s = case s of
+      ColourUnspecified -> "COLOUR_UNSPECIFIED"
+      Red -> "RED"
+      Green -> "GREEN"
+      Blue -> "BLUE"
+      Black -> "BLACK"
+  in
+    string <| lookup v
+```
+
+--
+
+## Enum Decoder
+
+```elm
+colourDecoder : Decoder Colour
+colourDecoder =
+  let
+    lookup s = case s of
+      "COLOUR_UNSPECIFIED" -> ColourUnspecified
+      "RED" -> Red
+      "GREEN" -> Green
+      "BLUE" -> Blue
+      "BLACK" -> Black
+  in
+    map lookup string
+```
+
+--
+
 ## Message Types
 
 -   Converted to Elm record type alias
@@ -191,7 +229,22 @@ type alias Person =
 
 --
 
-## Decoding
+## Message Encoder
+
+```elm
+personEncoder : Person -> Value
+personEncoder v =
+  Json.Encode.object
+    [ ("name", Json.Encode.string v.name)
+    , ("email", Json.Encode.string v.email)
+    , ("address", optionalEncoder addressEncoder v.address)
+    , ("orders", repeatedFieldEncoder orderEncoder v.orders)
+    ]
+```
+
+--
+
+## Message Decoder
 
 ```elm
 personDecoder : Json.Decoder Person
@@ -220,12 +273,6 @@ object3 : (a -> b -> c -> value)
     -> Decoder a
     -> Decoder b
     -> Decoder c
-    -> Decoder value
-object4 : (a -> b -> c -> d -> value)
-    -> Decoder a
-    -> Decoder b
-    -> Decoder c
-    -> Decoder d
     -> Decoder value
 ...
 object8 : ...
@@ -267,3 +314,17 @@ object8 : ...
 (<*>) f v =
   f `andThen` \x -> x <$> v
 ```
+
+--
+
+## Testing
+
+-   Equivalence testing
+    -   Written in Go
+    -   Only test the protoc plugin
+    -   Convert proto file to elm using the plugin, compare output against
+        golden
+-   Integration testing
+    -   Written in Elm
+    -   Also test the generated elm code
+    -   JSON encode/decode sample data

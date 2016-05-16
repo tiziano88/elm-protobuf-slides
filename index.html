@@ -8721,7 +8721,7 @@ var _user$project$Main$main = {
 					_elm_lang$core$Native_List.fromArray(
 						[
 							_elm_lang$window$Window$resizes(_user$project$Main$Resize),
-							_elm_lang$keyboard$Keyboard$presses(
+							_elm_lang$keyboard$Keyboard$downs(
 							function (k) {
 								var _p3 = k;
 								switch (_p3) {
@@ -8731,7 +8731,11 @@ var _user$project$Main$main = {
 										return _user$project$Main$NextPage;
 									case 37:
 										return _user$project$Main$PreviousPage;
+									case 38:
+										return _user$project$Main$PreviousPage;
 									case 39:
+										return _user$project$Main$NextPage;
+									case 40:
 										return _user$project$Main$NextPage;
 									default:
 										return _user$project$Main$Nop;
