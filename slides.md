@@ -89,7 +89,7 @@ message Person {
 
 --
 
-## Implementing a new plugin
+## Implementing a new protoc plugin
 
 > `protoc` (aka the Protocol Compiler) can be extended via plugins. A plugin is
 > just a program that reads a `CodeGeneratorRequest` from stdin and writes a
@@ -130,7 +130,7 @@ message CodeGeneratorResponse {
 -   Written in Go.
 -   Generates Elm code.
 -   Generated code has no runtime dependencies apart from `elm-lang/core`.
-    -   No protobuf runtime library (though it may change in the future).
+    -   No Elm protobuf runtime library (though it may change in the future).
 
 --
 
@@ -366,24 +366,27 @@ andThen d1 : ((A -> B) -> Decoder B) -> Decoder B
 ## Applicative-style parsing in Haskell
 
 ```haskell
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b
+(<$>) = fmap
 class (Functor f) => Applicative f where
   pure :: a -> f a
   (<*>) :: f (a -> b) -> f a -> f b
 ```
 
 ```haskell
-Foo4 :: A -> B -> C -> Foo4
+Foo3 :: A -> B -> C -> Foo4
 
 decoderA :: Decoder A
 decoderB :: Decoder B
 decoderC :: Decoder C
 
-Foo4 <$> decoderA
-  == fmap Foo4 decoderA
-  :: Decoder (B -> C -> Foo4)
+Foo3 <$> decoderA
+  == fmap Foo3 decoderA
+  :: Decoder (B -> C -> Foo3)
 
-Foo4 <$> decoderA <*> decoderB <*> decoderC
-  :: Decoder Foo4
+Foo3 <$> decoderA <*> decoderB <*> decoderC
+  :: Decoder Foo3
 ```
 
 --
@@ -426,12 +429,13 @@ personDecoder =
 
 ## Future work
 
--   imports
+-   reserved keywords
+-   proto imports
+-   proto packages
+-   proto options
 -   `Any` type
 -   `Timestamp` type
 -   `Duration` type
 -   Wrapper types
 -   `oneof` fields
 -   `map` fields
--   packages
--   options
