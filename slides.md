@@ -197,7 +197,7 @@ colourEncoder v =
     Json.Encode.string <| lookup v
 ```
 
-[Json.Encode.string](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Encode#string)
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Encode#string
 
 --
 
@@ -217,7 +217,7 @@ colourDecoder =
     Json.Decode.map lookup string
 ```
 
-[Json.Decode.map](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map)
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map
 
 --
 
@@ -258,7 +258,7 @@ personEncoder v =
     ]
 ```
 
-[Json.Encode.object](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Encode#object)
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Encode#object
 
 --
 
@@ -275,7 +275,7 @@ personDecoder =
     (repeatedFieldDecoder orderDecoder "orders")
 ```
 
-[Json.Decode.object4](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#object4)
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#object4
 
 --
 
@@ -313,7 +313,7 @@ decoderA : Decoder A
 decoderB : Decoder B
 ```
 
-[Json.Decode.map](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map)
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map
 
 ```elm
 type alias Foo1 = { a : A }
@@ -346,9 +346,8 @@ map : (a -> b) -> Decoder a -> Decoder b
 andThen : Decoder a -> (a -> Decoder b) -> Decoder b
 ```
 
-[Json.Decode.map](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map)
-[Json.Decode.andThen](http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#andThen)
-
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#map
+http://package.elm-lang.org/packages/elm-lang/core/4.0.0/Json-Decode#andThen
 
 ```elm
 ap : Decoder (a -> b) -> Decoder a -> Decoder b
@@ -364,30 +363,6 @@ andThen d1 : ((A -> B) -> Decoder B) -> Decoder B
 
 --
 
-## Monadic-style parsing
-
--   `Json.Decode.Decoder a` is (conceptually) a Monad.
--   In Haskell:
-
-    ```haskell
-    class (Applicative m) => Monad m where
-      (>>=) :: m a -> (a -> m b) -> m b
-      return :: a -> m a
-    ```
-
--   In Elm:
-
-    ```elm
-    map : (a -> b) -> (Decoder a -> Decoder b)
-    object1 : (a -> value) -> (Decoder a -> Decoder value)
-    andThen : Decoder a -> (a -> Decoder b) -> Decoder b
-    ```
-
--   `Json.Decode.Decoder a` is therefore also (conceptually) an Applicative
-    Functor
-
---
-
 ## Applicative-style parsing in Haskell
 
 ```haskell
@@ -397,19 +372,18 @@ class (Functor f) => Applicative f where
 ```
 
 ```haskell
-person :: String -> String -> Address -> List Order -> Person
+Foo4 :: A -> B -> C -> Foo4
 
-stringDecoder :: Decoder String
-addressDecoder :: Decoder Address
-ordersDecoder :: Decoder (List Order)
+decoderA :: Decoder A
+decoderB :: Decoder B
+decoderC :: Decoder C
 
-person <$> stringDecoder
-  == fmap person stringDecoder
-  :: Decoder (String -> Address -> List Order -> Person)
+Foo4 <$> decoderA
+  == fmap Foo4 decoderA
+  :: Decoder (B -> C -> Foo4)
 
-person <$> stringDecoder <*> stringDecoder
-  <*> addressDecoder <*> ordersDecoder
-  :: Decoder Person
+Foo4 <$> decoderA <*> decoderB <*> decoderC
+  :: Decoder Foo4
 ```
 
 --
@@ -422,6 +396,16 @@ person <$> stringDecoder <*> stringDecoder
 
 (<*>) : Decoder (a -> b) -> Decoder a -> Decoder b
 (<*>) f v = f `andThen` (\x -> x <$> v)
+```
+
+```elm
+personDecoder : Json.Decode.Decoder Person
+personDecoder =
+  Person
+    <$> (stringDecoder "name")
+    <*> (stringDecoder "email")
+    <*> (optionalFieldDecoder addressDecoder "address")
+    <*> (repeatedFieldDecoder orderDecoder "orders")
 ```
 
 --
@@ -437,3 +421,17 @@ person <$> stringDecoder <*> stringDecoder
     -   Written in Elm.
     -   Also test the generated elm code.
     -   JSON encode/decode sample data.
+
+--
+
+## Future work
+
+-   imports
+-   `Any` type
+-   `Timestamp` type
+-   `Duration` type
+-   Wrapper types
+-   `oneof` fields
+-   `map` fields
+-   packages
+-   options
